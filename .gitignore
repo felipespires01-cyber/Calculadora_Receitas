@@ -1,0 +1,18 @@
+# Sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Arquivos temporários / editores
+*~
+*.tmp
+*.bak
+.vscode/
+.idea/
+
+# Backups de receitas gerados pelo app (não versionar dados pessoais)
+receitas-backup-*.json
+
+# Configuração local da máquina (Claude Code)
+.claude/settings.local.json
