@@ -306,6 +306,7 @@ function App() {
   const [pesqResult, setPesqResult] = useState(null);
   const [pesqErro, setPesqErro] = useState(null);
   const [msg, setMsg] = useState(null); // { tipo: "erro"|"sucesso", texto }
+  const [importPreview, setImportPreview] = useState(null); // { produtos, novas, atualizadas }
 
   const set = (patch) => setSt((p) => ({ ...p, ...patch }));
 
@@ -380,6 +381,39 @@ function App() {
       setMsg({ tipo: "erro", texto: "Não foi possível gerar o backup. Tente novamente." });
     }
   };
+
+  // Lê o arquivo escolhido e prepara o resumo de confirmação
+  const aoEscolherArquivo = (e) => {
+    setMsg(null);
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ""; // permite reescolher o mesmo arquivo depois
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const res = validarBackup(String(reader.result));
+      if (!res.ok) {
+        setMsg({ tipo: "erro", texto: res.erro });
+        return;
+      }
+      const prev = mesclarProdutos(produtos, res.produtos);
+      setImportPreview(prev);
+    };
+    reader.onerror = () => setMsg({ tipo: "erro", texto: "Não foi possível ler o arquivo." });
+    reader.readAsText(file);
+  };
+
+  // Confirma e aplica a importação
+  const confirmarImportacao = () => {
+    if (!importPreview) return;
+    persistir(importPreview.lista);
+    setMsg({
+      tipo: "sucesso",
+      texto: `Importado: ${importPreview.novas} nova(s), ${importPreview.atualizadas} atualizada(s).`,
+    });
+    setImportPreview(null);
+  };
+
+  const cancelarImportacao = () => setImportPreview(null);
 
   // --- Pesquisa de preço de mercado (só funciona dentro do Claude) ---
   const pesquisarMercado = async () => {
@@ -596,6 +630,27 @@ function App() {
       {view === "salvos" && (
         <React.Fragment>
           <button onClick={exportarBackup} style={{ marginBottom: 12 }}>TESTE: Fazer backup</button>
+          <input id="inputImport" type="file" accept="application/json,.json"
+            onChange={aoEscolherArquivo} style={{ display: "none" }} />
+          <button onClick={() => document.getElementById("inputImport").click()} style={{ marginBottom: 12, marginLeft: 8 }}>
+            TESTE: Importar backup
+          </button>
+          {importPreview && (
+            <Card highlight>
+              <p style={{ margin: "0 0 12px", fontSize: 14 }}>
+                Encontradas <strong>{importPreview.novas}</strong> receita(s) nova(s) e{" "}
+                <strong>{importPreview.atualizadas}</strong> atualização(ões). Confirmar importação?
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={confirmarImportacao} style={{ padding: "8px 14px", border: "none", borderRadius: 8, background: C.coral400, color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+                  Confirmar importação
+                </button>
+                <button onClick={cancelarImportacao} style={{ padding: "8px 14px", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, background: "none", color: "var(--color-text-secondary)", cursor: "pointer", fontSize: 14 }}>
+                  Cancelar
+                </button>
+              </div>
+            </Card>
+          )}
           {produtos.length === 0 ? (
           <Card>
             <div style={{ textAlign: "center", padding: "32px 0", color: "var(--color-text-secondary)" }}>
