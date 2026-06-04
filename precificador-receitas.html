@@ -178,6 +178,49 @@ const baixarArquivo = (nome, conteudo) => {
   URL.revokeObjectURL(url);
 };
 
+// Valida o conteúdo importado. Retorna { ok, produtos, erro }
+const validarBackup = (texto) => {
+  let dados;
+  try {
+    dados = JSON.parse(texto);
+  } catch {
+    return { ok: false, erro: "Este arquivo não é um backup válido (não é um JSON)." };
+  }
+  if (!dados || typeof dados !== "object") {
+    return { ok: false, erro: "Este arquivo não é um backup de receitas." };
+  }
+  if (dados.app !== BACKUP_APP_ID) {
+    return { ok: false, erro: "Este arquivo não parece ser um backup do Precificador de Receitas." };
+  }
+  if (!Array.isArray(dados.produtos)) {
+    return { ok: false, erro: "O backup está sem a lista de produtos." };
+  }
+  // Garante que todo produto tenha um id (gera um se faltar)
+  const produtos = dados.produtos.map((p, i) => ({
+    ...p,
+    id: p && p.id != null ? String(p.id) : `import-${i}-${p && p.savedAt ? p.savedAt : "x"}`,
+  }));
+  return { ok: true, produtos };
+};
+
+// Mescla a lista importada na atual, por id. Retorna { lista, novas, atualizadas }
+const mesclarProdutos = (atuais, importados) => {
+  const porId = new Map(atuais.map((p) => [String(p.id), p]));
+  let novas = 0;
+  let atualizadas = 0;
+  importados.forEach((imp) => {
+    const id = String(imp.id);
+    if (porId.has(id)) atualizadas++;
+    else novas++;
+    porId.set(id, imp);
+  });
+  // Mais recentes primeiro (usa savedAt quando existir)
+  const lista = Array.from(porId.values()).sort(
+    (a, b) => (b.savedAt || 0) - (a.savedAt || 0)
+  );
+  return { lista, novas, atualizadas };
+};
+
 /* ============================================================
    3) COMPONENTES VISUAIS REUTILIZÁVEIS
    ============================================================ */
