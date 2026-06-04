@@ -146,6 +146,38 @@ const gravarProdutos = (lista) => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lista)); } catch {}
 };
 
+// Versão do formato de backup (incrementar se o formato mudar no futuro)
+const BACKUP_VERSAO = 1;
+const BACKUP_APP_ID = "precificador-receitas";
+
+// Monta o objeto de backup (envelope com metadados)
+const montarBackup = (produtos) => ({
+  app: BACKUP_APP_ID,
+  versao: BACKUP_VERSAO,
+  exportadoEm: new Date().toISOString(),
+  produtos: Array.isArray(produtos) ? produtos : [],
+});
+
+// Nome de arquivo datado: receitas-backup-AAAA-MM-DD.json
+const nomeArquivoBackup = () => {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `receitas-backup-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+};
+
+// Dispara o download de um texto como arquivo
+const baixarArquivo = (nome, conteudo) => {
+  const blob = new Blob([conteudo], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
 /* ============================================================
    3) COMPONENTES VISUAIS REUTILIZÁVEIS
    ============================================================ */
@@ -230,6 +262,7 @@ function App() {
   const [pesqLoading, setPesqLoading] = useState(false);
   const [pesqResult, setPesqResult] = useState(null);
   const [pesqErro, setPesqErro] = useState(null);
+  const [msg, setMsg] = useState(null); // { tipo: "erro"|"sucesso", texto }
 
   const set = (patch) => setSt((p) => ({ ...p, ...patch }));
 
@@ -295,6 +328,15 @@ function App() {
     setEditId(p.id); setPesqResult(null); setPesqErro(null); setView("calc");
   };
   const excluir = (id) => { persistir(produtos.filter((p) => p.id !== id)); if (editId === id) setEditId(null); };
+
+  const exportarBackup = () => {
+    try {
+      const conteudo = JSON.stringify(montarBackup(produtos), null, 2);
+      baixarArquivo(nomeArquivoBackup(), conteudo);
+    } catch (e) {
+      setMsg({ tipo: "erro", texto: "Não foi possível gerar o backup. Tente novamente." });
+    }
+  };
 
   // --- Pesquisa de preço de mercado (só funciona dentro do Claude) ---
   const pesquisarMercado = async () => {
@@ -509,7 +551,9 @@ function App() {
       )}
 
       {view === "salvos" && (
-        produtos.length === 0 ? (
+        <React.Fragment>
+          <button onClick={exportarBackup} style={{ marginBottom: 12 }}>TESTE: Fazer backup</button>
+          {produtos.length === 0 ? (
           <Card>
             <div style={{ textAlign: "center", padding: "32px 0", color: "var(--color-text-secondary)" }}>
               <Ic n="folder" s={30} style={{ opacity: 0.3, display: "block", margin: "0 auto 12px" }} />
@@ -573,7 +617,8 @@ function App() {
               </Card>
             );
           })
-        )
+        )}
+        </React.Fragment>
       )}
     </div>
   );
