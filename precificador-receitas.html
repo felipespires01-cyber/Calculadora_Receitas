@@ -108,6 +108,9 @@ const ICONS = {
   alert: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
   plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
   trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
 };
 function Ic({ n, s = 16, c = "currentColor", style, cls }) {
   return (
@@ -636,7 +639,21 @@ function App() {
 
       {view === "salvos" && (
         <React.Fragment>
-          <button onClick={exportarBackup} style={{ marginBottom: 12 }}>TESTE: Fazer backup</button>
+          <Card>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <button onClick={exportarBackup} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: "var(--border-radius-md)", border: "0.5px solid " + C.coral200, background: C.coral50, color: C.coral600, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                <Ic n="download" s={14} /> Fazer backup
+              </button>
+              <input id="inputImport" type="file" accept="application/json,.json" onChange={aoEscolherArquivo} style={{ display: "none" }} />
+              <button onClick={() => document.getElementById("inputImport").click()} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-tertiary)", background: "none", color: "var(--color-text-secondary)", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                <Ic n="upload" s={14} /> Importar backup
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 12, fontSize: 12, color: "var(--color-text-secondary)" }}>
+              <Ic n="shield" s={14} style={{ marginTop: 1, flexShrink: 0, opacity: 0.7 }} />
+              <span>Suas receitas ficam guardadas só neste aparelho. Faça um backup de vez em quando para não perder nada — guarde o arquivo no WhatsApp ou na nuvem.</span>
+            </div>
+          </Card>
           {msg && (
             <div style={{
               display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", marginBottom: 12,
@@ -650,11 +667,6 @@ function App() {
               <button onClick={() => setMsg(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>×</button>
             </div>
           )}
-          <input id="inputImport" type="file" accept="application/json,.json"
-            onChange={aoEscolherArquivo} style={{ display: "none" }} />
-          <button onClick={() => document.getElementById("inputImport").click()} style={{ marginBottom: 12, marginLeft: 8 }}>
-            TESTE: Importar backup
-          </button>
           {importPreview && (
             <Card highlight>
               <p style={{ margin: "0 0 12px", fontSize: 14 }}>
