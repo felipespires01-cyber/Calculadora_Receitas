@@ -1,0 +1,12 @@
+{
+  "name": "precificador-receitas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build do Precificador de Receitas: gera um HTML autossuficiente (sem CDN, sem Babel em runtime).",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@babel/standalone": "^7"
+  }
+}

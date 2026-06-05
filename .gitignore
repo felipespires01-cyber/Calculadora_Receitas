@@ -16,3 +16,6 @@ receitas-backup-*.json
 
 # Configuração local da máquina (Claude Code)
 .claude/settings.local.json
+
+# Dependências de build (instaladas com npm; não versionar)
+node_modules/
