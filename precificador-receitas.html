@@ -473,9 +473,24 @@ function App() {
               <Field label="Nome do produto">
                 <Inp value={st.produto} onChange={(e) => set({ produto: e.target.value })} placeholder="Ex: Brigadeiro gourmet" />
               </Field>
-              <Field label="Rendimento (unidades)" hint="Quantas peças a receita rende?">
-                <Inp type="number" value={st.rendimento} onChange={(e) => set({ rendimento: e.target.value })} placeholder="Ex: 30" min="1" />
-              </Field>
+              <div>
+                <label style={{ display: "block", fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 5 }}>{ehKg ? "Rendimento (quilos)" : "Rendimento (unidades)"}</label>
+                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                  {[["un", "por unidade"], ["kg", "por quilo"]].map(([v, lbl]) => {
+                    const at = st.tipoRend === v;
+                    return (
+                      <button key={v} onClick={() => set({ tipoRend: v })} style={{
+                        flex: 1, padding: "5px 0", fontSize: 12, borderRadius: "var(--border-radius-md)", cursor: "pointer",
+                        border: at ? "0.5px solid " + C.coral200 : "0.5px solid var(--color-border-tertiary)",
+                        background: at ? C.coral50 : "transparent",
+                        color: at ? C.coral600 : "var(--color-text-secondary)", fontWeight: at ? 500 : 400,
+                      }}>{lbl}</button>
+                    );
+                  })}
+                </div>
+                <Inp type="number" value={st.rendimento} onChange={(e) => set({ rendimento: e.target.value })} placeholder={ehKg ? "Ex: 2,5" : "Ex: 30"} min={ehKg ? "0" : "1"} step={ehKg ? "0.001" : "1"} />
+                <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 4, marginBottom: 0 }}>{ehKg ? "Quanto a receita rende em kg?" : "Quantas peças a receita rende?"}</p>
+              </div>
             </div>
           </Card>
 
