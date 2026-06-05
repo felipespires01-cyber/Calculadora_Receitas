@@ -97,7 +97,7 @@
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
   }
-  #root { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  #root { max-width: 720px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
   input { font-family: var(--font-sans); }
   input:focus { outline: 2px solid #D85A30; outline-offset: -1px; }
   button { font-family: var(--font-sans); }
@@ -108,6 +108,19 @@
   .flash-ok { animation: flashSucesso .9s ease; }
   .reveal { animation: revelar .22s ease; }
   @keyframes revelar { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* ---------- Grades responsivas (mobile-first) ---------- */
+  .grid-produto { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-mo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-ingr { display: grid; grid-template-columns: 1fr 116px 40px; gap: 8px; align-items: center; }
+  .grid-margem { display: grid; grid-template-columns: 68px 1fr 1fr 1fr; }
+  @media (max-width: 560px) {
+    .grid-produto { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-mo { grid-template-columns: 1fr 1fr; }
+    .mo-full { grid-column: 1 / -1; }
+    .grid-margem { grid-template-columns: 52px 1fr 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -303,9 +316,9 @@ function SecTitle({ children, icon }) {
     </div>
   );
 }
-function Field({ label, children, hint }) {
+function Field({ label, children, hint, className }) {
   return (
-    <div>
+    <div className={className}>
       <label style={{ display: "block", fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 5 }}>{label}</label>
       {children}
       {hint && <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 4, marginBottom: 0 }}>{hint}</p>}
@@ -314,9 +327,9 @@ function Field({ label, children, hint }) {
 }
 function Inp(props) {
   return <input {...props} style={{
-    width: "100%", padding: "7px 10px",
+    width: "100%", padding: "10px 12px",
     border: "0.5px solid var(--color-border-secondary)",
-    borderRadius: "var(--border-radius-md)", fontSize: 14,
+    borderRadius: "var(--border-radius-md)", fontSize: 16,
     color: "var(--color-text-primary)", background: "var(--color-background-secondary)",
     ...props.style,
   }} />;
@@ -533,7 +546,7 @@ function App() {
 
   if (!autenticado) return <TelaLogin aoEntrar={entrar} />;
   return (
-    <div style={{ padding: "16px 0 40px" }}>
+    <div style={{ padding: "max(16px, env(safe-area-inset-top)) 0 max(40px, env(safe-area-inset-bottom))" }}>
       {/* Cabeçalho */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, paddingBottom: 16, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
         <div style={{
@@ -563,7 +576,7 @@ function App() {
           {/* Produto */}
           <Card>
             <SecTitle icon={<Ic n="chef" s={15} />}>Produto</SecTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+            <div className="grid-produto">
               <Field label="Nome do produto">
                 <Inp value={st.produto} onChange={(e) => set({ produto: e.target.value })} placeholder="Ex: Brigadeiro gourmet" />
               </Field>
@@ -574,7 +587,7 @@ function App() {
                     const at = st.tipoRend === v;
                     return (
                       <button key={v} onClick={() => set({ tipoRend: v })} style={{
-                        flex: 1, padding: "5px 0", fontSize: 12, borderRadius: "var(--border-radius-md)", cursor: "pointer",
+                        flex: 1, padding: "9px 0", fontSize: 13, borderRadius: "var(--border-radius-md)", cursor: "pointer",
                         border: at ? "0.5px solid " + C.coral200 : "0.5px solid var(--color-border-tertiary)",
                         background: at ? C.coral50 : "transparent",
                         color: at ? C.coral600 : "var(--color-text-secondary)", fontWeight: at ? 500 : 400,
@@ -594,23 +607,23 @@ function App() {
             <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginTop: -6, marginBottom: 14 }}>
               Custo de cada ingrediente na quantidade usada na receita (não o pacote inteiro)
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 32px", gap: 8, marginBottom: 6 }}>
+            <div className="grid-ingr" style={{ marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: "var(--color-text-secondary)", paddingLeft: 2 }}>Ingrediente</span>
               <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>Custo na receita</span><span />
             </div>
             {st.ingredientes.map((ing) => (
-              <div key={ing.id} style={{ display: "grid", gridTemplateColumns: "1fr 120px 32px", gap: 8, marginBottom: 8, alignItems: "center" }}>
+              <div key={ing.id} className="grid-ingr" style={{ marginBottom: 8 }}>
                 <Inp value={ing.nome} onChange={(e) => updateIngr(ing.id, "nome", e.target.value)} placeholder="Ex: Leite condensado" />
                 <div style={{ position: "relative" }}>
                   <span style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "var(--color-text-secondary)", pointerEvents: "none" }}>R$</span>
                   <Inp type="number" value={ing.custo} onChange={(e) => updateIngr(ing.id, "custo", e.target.value)} placeholder="0,00" min="0" step="0.01" style={{ paddingLeft: 30 }} />
                 </div>
-                <button onClick={() => removeIngr(ing.id)} disabled={st.ingredientes.length === 1} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-tertiary)", background: "none", cursor: st.ingredientes.length === 1 ? "default" : "pointer", opacity: st.ingredientes.length === 1 ? 0.3 : 0.7 }}>
+                <button onClick={() => removeIngr(ing.id)} disabled={st.ingredientes.length === 1} style={{ width: 40, height: 44, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-tertiary)", background: "none", cursor: st.ingredientes.length === 1 ? "default" : "pointer", opacity: st.ingredientes.length === 1 ? 0.3 : 0.7 }}>
                   <Ic n="trash" s={14} c="var(--color-text-secondary)" />
                 </button>
               </div>
             ))}
-            <button onClick={addIngr} style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, padding: "7px 14px", border: "0.5px dashed " + C.coral400, borderRadius: "var(--border-radius-md)", background: C.coral50, color: C.coral600, fontSize: 13, cursor: "pointer" }}>
+            <button onClick={addIngr} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 8, padding: "11px 16px", width: "100%", border: "0.5px dashed " + C.coral400, borderRadius: "var(--border-radius-md)", background: C.coral50, color: C.coral600, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
               <Ic n="plus" s={14} /> Adicionar ingrediente
             </button>
           </Card>
@@ -619,7 +632,7 @@ function App() {
           <Card>
             <SecTitle icon={<Ic n="package" s={15} />}>Custos adicionais</SecTitle>
             <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginTop: -6, marginBottom: 14 }}>Por lote completo (deixe em branco o que não se aplica)</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <div className="grid-3">
               <Field label="Embalagem (R$)" hint="Pote, saco, caixinha"><Inp type="number" value={st.embalagem} onChange={(e) => set({ embalagem: e.target.value })} placeholder="0,00" min="0" step="0.01" /></Field>
               <Field label="Gás / Energia (R$)" hint="Estimativa por receita"><Inp type="number" value={st.gasEnergia} onChange={(e) => set({ gasEnergia: e.target.value })} placeholder="0,00" min="0" step="0.01" /></Field>
               <Field label="Outros (R$)" hint="Etiqueta, fita, extras"><Inp type="number" value={st.outros} onChange={(e) => set({ outros: e.target.value })} placeholder="0,00" min="0" step="0.01" /></Field>
@@ -630,10 +643,10 @@ function App() {
           <Card>
             <SecTitle icon={<Ic n="clock" s={15} />}>Mão de obra</SecTitle>
             <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginTop: -6, marginBottom: 14 }}>O seu tempo tem valor — não trabalhe de graça!</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <div className="grid-mo">
               <Field label="Horas trabalhadas"><Inp type="number" value={st.horas} onChange={(e) => set({ horas: e.target.value })} placeholder="0" min="0" /></Field>
               <Field label="Minutos"><Inp type="number" value={st.minutos} onChange={(e) => set({ minutos: e.target.value })} placeholder="0" min="0" max="59" /></Field>
-              <Field label="Valor por hora (R$)" hint="Sugestão: R$ 15 a R$ 25"><Inp type="number" value={st.valorHora} onChange={(e) => set({ valorHora: e.target.value })} placeholder="Ex: 20,00" min="0" step="0.5" /></Field>
+              <Field className="mo-full" label="Valor por hora (R$)" hint="Sugestão: R$ 15 a R$ 25"><Inp type="number" value={st.valorHora} onChange={(e) => set({ valorHora: e.target.value })} placeholder="Ex: 20,00" min="0" step="0.5" /></Field>
             </div>
           </Card>
 
@@ -677,14 +690,14 @@ function App() {
 
                 <p style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Escolha a margem (clique numa linha)</p>
                 <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-md)", overflow: "hidden" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "68px 1fr 1fr 1fr", background: "var(--color-background-secondary)", padding: "7px 14px", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 500 }}>
+                  <div className="grid-margem" style={{ background: "var(--color-background-secondary)", padding: "7px 14px", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 500 }}>
                     <span>Margem</span><span>{ehKg ? "Preço/kg" : "Preço/un."}</span><span>{ehKg ? "Lucro/kg" : "Lucro/un."}</span><span>Lucro total</span>
                   </div>
                   {calc.precos.map((p) => {
                     const sel = p.margem === st.margem;
                     return (
-                      <div key={p.margem} onClick={() => set({ margem: p.margem })} className="card-anim" style={{
-                        display: "grid", gridTemplateColumns: "68px 1fr 1fr 1fr", padding: "11px 14px",
+                      <div key={p.margem} onClick={() => set({ margem: p.margem })} className="card-anim grid-margem" style={{
+                        padding: "11px 14px",
                         borderTop: "0.5px solid var(--color-border-tertiary)",
                         background: sel ? "rgba(216,90,48,0.14)" : "transparent",
                         boxShadow: sel ? "inset 3px 0 0 " + C.coral400 : "none",

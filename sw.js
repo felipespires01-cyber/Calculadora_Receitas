@@ -1,8 +1,8 @@
 // Service worker do Precificador de Receitas (gerado pelo build).
 // Estratégia: cache-first do "app shell" para funcionar offline.
-// A versão do cache é carimbada pelo build (v1780625900659) — ao publicar uma
+// A versão do cache é carimbada pelo build (v1780627479828) — ao publicar uma
 // versão nova, o cache muda e o app se atualiza sozinho.
-const CACHE = "precificador-v1780625900659";
+const CACHE = "precificador-v1780627479828";
 const ATIVOS = [
   "./",
   "./index.html",

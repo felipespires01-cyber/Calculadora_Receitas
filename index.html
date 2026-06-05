@@ -399,7 +399,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
   }
-  #root { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+  #root { max-width: 720px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
   input { font-family: var(--font-sans); }
   input:focus { outline: 2px solid #D85A30; outline-offset: -1px; }
   button { font-family: var(--font-sans); }
@@ -410,6 +410,19 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
   .flash-ok { animation: flashSucesso .9s ease; }
   .reveal { animation: revelar .22s ease; }
   @keyframes revelar { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* ---------- Grades responsivas (mobile-first) ---------- */
+  .grid-produto { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-mo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-ingr { display: grid; grid-template-columns: 1fr 116px 40px; gap: 8px; align-items: center; }
+  .grid-margem { display: grid; grid-template-columns: 68px 1fr 1fr 1fr; }
+  @media (max-width: 560px) {
+    .grid-produto { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-mo { grid-template-columns: 1fr 1fr; }
+    .mo-full { grid-column: 1 / -1; }
+    .grid-margem { grid-template-columns: 52px 1fr 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -685,9 +698,12 @@ function SecTitle({
 function Field({
   label,
   children,
-  hint
+  hint,
+  className
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  return /*#__PURE__*/React.createElement("div", {
+    className: className
+  }, /*#__PURE__*/React.createElement("label", {
     style: {
       display: "block",
       fontSize: 12,
@@ -707,10 +723,10 @@ function Inp(props) {
   return /*#__PURE__*/React.createElement("input", _extends({}, props, {
     style: {
       width: "100%",
-      padding: "7px 10px",
+      padding: "10px 12px",
       border: "0.5px solid var(--color-border-secondary)",
       borderRadius: "var(--border-radius-md)",
-      fontSize: 14,
+      fontSize: 16,
       color: "var(--color-text-primary)",
       background: "var(--color-background-secondary)",
       ...props.style
@@ -1090,7 +1106,7 @@ function App() {
   });
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: "16px 0 40px"
+      padding: "max(16px, env(safe-area-inset-top)) 0 max(40px, env(safe-area-inset-bottom))"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1175,11 +1191,7 @@ function App() {
       s: 15
     })
   }, "Produto"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "2fr 1fr",
-      gap: 12
-    }
+    className: "grid-produto"
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Nome do produto"
   }, /*#__PURE__*/React.createElement(Inp, {
@@ -1210,8 +1222,8 @@ function App() {
       }),
       style: {
         flex: 1,
-        padding: "5px 0",
-        fontSize: 12,
+        padding: "9px 0",
+        fontSize: 13,
         borderRadius: "var(--border-radius-md)",
         cursor: "pointer",
         border: at ? "0.5px solid " + C.coral200 : "0.5px solid var(--color-border-tertiary)",
@@ -1250,10 +1262,8 @@ function App() {
       marginBottom: 14
     }
   }, "Custo de cada ingrediente na quantidade usada na receita (n\xE3o o pacote inteiro)"), /*#__PURE__*/React.createElement("div", {
+    className: "grid-ingr",
     style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 120px 32px",
-      gap: 8,
       marginBottom: 6
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -1269,12 +1279,9 @@ function App() {
     }
   }, "Custo na receita"), /*#__PURE__*/React.createElement("span", null)), st.ingredientes.map(ing => /*#__PURE__*/React.createElement("div", {
     key: ing.id,
+    className: "grid-ingr",
     style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 120px 32px",
-      gap: 8,
-      marginBottom: 8,
-      alignItems: "center"
+      marginBottom: 8
     }
   }, /*#__PURE__*/React.createElement(Inp, {
     value: ing.nome,
@@ -1308,8 +1315,8 @@ function App() {
     onClick: () => removeIngr(ing.id),
     disabled: st.ingredientes.length === 1,
     style: {
-      width: 32,
-      height: 32,
+      width: 40,
+      height: 44,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -1328,14 +1335,17 @@ function App() {
     style: {
       display: "flex",
       alignItems: "center",
+      justifyContent: "center",
       gap: 6,
-      marginTop: 6,
-      padding: "7px 14px",
+      marginTop: 8,
+      padding: "11px 16px",
+      width: "100%",
       border: "0.5px dashed " + C.coral400,
       borderRadius: "var(--border-radius-md)",
       background: C.coral50,
       color: C.coral600,
-      fontSize: 13,
+      fontSize: 14,
+      fontWeight: 500,
       cursor: "pointer"
     }
   }, /*#__PURE__*/React.createElement(Ic, {
@@ -1354,11 +1364,7 @@ function App() {
       marginBottom: 14
     }
   }, "Por lote completo (deixe em branco o que n\xE3o se aplica)"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 12
-    }
+    className: "grid-3"
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Embalagem (R$)",
     hint: "Pote, saco, caixinha"
@@ -1408,11 +1414,7 @@ function App() {
       marginBottom: 14
     }
   }, "O seu tempo tem valor \u2014 n\xE3o trabalhe de gra\xE7a!"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: 12
-    }
+    className: "grid-mo"
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Horas trabalhadas"
   }, /*#__PURE__*/React.createElement(Inp, {
@@ -1435,6 +1437,7 @@ function App() {
     min: "0",
     max: "59"
   })), /*#__PURE__*/React.createElement(Field, {
+    className: "mo-full",
     label: "Valor por hora (R$)",
     hint: "Sugest\xE3o: R$ 15 a R$ 25"
   }, /*#__PURE__*/React.createElement(Inp, {
@@ -1588,9 +1591,8 @@ function App() {
       overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "grid-margem",
     style: {
-      display: "grid",
-      gridTemplateColumns: "68px 1fr 1fr 1fr",
       background: "var(--color-background-secondary)",
       padding: "7px 14px",
       fontSize: 12,
@@ -1604,10 +1606,8 @@ function App() {
       onClick: () => set({
         margem: p.margem
       }),
-      className: "card-anim",
+      className: "card-anim grid-margem",
       style: {
-        display: "grid",
-        gridTemplateColumns: "68px 1fr 1fr 1fr",
         padding: "11px 14px",
         borderTop: "0.5px solid var(--color-border-tertiary)",
         background: sel ? "rgba(216,90,48,0.14)" : "transparent",
