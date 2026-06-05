@@ -464,13 +464,17 @@ function App() {
   return (
     <div style={{ padding: "16px 0 40px" }}>
       {/* Cabeçalho */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 14, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-        <div style={{ width: 38, height: 38, borderRadius: "var(--border-radius-md)", background: C.coral50, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Ic n="chef" s={20} c={C.coral600} />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, paddingBottom: 16, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{
+          width: 46, height: 46, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(135deg, " + C.coral400 + ", " + C.coral600 + ")",
+          boxShadow: "0 4px 12px rgba(216,90,48,0.35)",
+        }}>
+          <Ic n="chef" s={24} c="#fff" />
         </div>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 500, margin: 0 }}>Precificador de receitas</h1>
-          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>Custo, margem e preço num só lugar</p>
+          <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0, letterSpacing: "-0.01em" }}>Precificador de receitas</h1>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "2px 0 0" }}>Custo, margem e preço num só lugar</p>
         </div>
       </div>
 
