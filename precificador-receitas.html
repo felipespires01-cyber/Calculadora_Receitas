@@ -309,7 +309,7 @@ function TabBtn({ active, onClick, icon, children, badge }) {
    4) ESTADO INICIAL DE UMA RECEITA EM BRANCO
    ============================================================ */
 const receitaVazia = {
-  produto: "", rendimento: "",
+  produto: "", rendimento: "", tipoRend: "un",
   ingredientes: [{ id: 1, nome: "", custo: "" }],
   embalagem: "", gasEnergia: "", outros: "",
   horas: "", minutos: "", valorHora: "", margem: 50,
@@ -355,26 +355,30 @@ function App() {
     const totalHoras = (parseInt(st.horas) || 0) + (parseInt(st.minutos) || 0) / 60;
     const custoMO = totalHoras * parseNum(st.valorHora);
     const custoTotal = custoIngr + custoEmb + custoGas + custoOut + custoMO;
-    const unids = Math.max(parseInt(st.rendimento) || 1, 1);
-    const custoPorUn = custoTotal / unids;
+    const ehKg = st.tipoRend === "kg";
+    const quantidade = ehKg
+      ? Math.max(parseNum(st.rendimento), 0.001)
+      : Math.max(parseInt(st.rendimento) || 1, 1);
+    const custoPorMedida = custoTotal / quantidade;
     return {
-      custoIngr, custoEmb, custoGas, custoOut, custoMO, custoTotal, unids, custoPorUn,
+      custoIngr, custoEmb, custoGas, custoOut, custoMO, custoTotal, quantidade, custoPorMedida,
       precos: [20, 30, 50, 70, 100, 150].map((m) => ({
-        margem: m, preco: custoPorUn * (1 + m / 100),
-        lucroUn: custoPorUn * (m / 100), lucroTotal: custoPorUn * (m / 100) * unids,
+        margem: m, preco: custoPorMedida * (1 + m / 100),
+        lucroUn: custoPorMedida * (m / 100), lucroTotal: custoPorMedida * (m / 100) * quantidade,
       })),
     };
   }, [st]);
 
   const hasData = calc.custoTotal > 0;
-  const precoEscolhido = calc.custoPorUn * (1 + st.margem / 100);
+  const ehKg = st.tipoRend === "kg";
+  const precoEscolhido = calc.custoPorMedida * (1 + st.margem / 100);
 
   // --- Salvar produto ---
   const salvar = () => {
     if (!hasData) return;
     const registro = {
       id: editId || String(Date.now()), ...st,
-      custoTotal: calc.custoTotal, custoPorUn: calc.custoPorUn, precoVenda: precoEscolhido,
+      custoTotal: calc.custoTotal, custoPorUn: calc.custoPorMedida, precoVenda: precoEscolhido,
       savedAt: editId ? (produtos.find((p) => p.id === editId)?.savedAt || Date.now()) : Date.now(),
       updatedAt: Date.now(),
     };
@@ -387,7 +391,7 @@ function App() {
 
   const carregar = (p) => {
     setSt({
-      produto: p.produto, rendimento: p.rendimento, ingredientes: p.ingredientes,
+      produto: p.produto, rendimento: p.rendimento, tipoRend: p.tipoRend || "un", ingredientes: p.ingredientes,
       embalagem: p.embalagem, gasEnergia: p.gasEnergia, outros: p.outros,
       horas: p.horas, minutos: p.minutos, valorHora: p.valorHora, margem: p.margem || 50,
     });
