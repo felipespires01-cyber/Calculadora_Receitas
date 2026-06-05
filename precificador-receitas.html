@@ -125,6 +125,7 @@ const ICONS = {
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
   upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
 };
 function Ic({ n, s = 16, c = "currentColor", style, cls }) {
   return (
@@ -242,6 +243,28 @@ const mesclarProdutos = (atuais, importados) => {
   );
   return { lista, novas, atualizadas };
 };
+
+// --- Login (trava leve; hash em JS puro para funcionar em file://) ---
+const cyrb53 = (str, seed = 0) => {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+const AUTH_KEY = "precificador_auth";
+const AUTH_USER = "isa";
+const AUTH_SEED = 7321;
+const AUTH_HASH = 8470134523032408; // hash de "isa123"
+const conferirLogin = (usuario, senha) =>
+  usuario.trim().toLowerCase() === AUTH_USER &&
+  cyrb53("precificador|" + senha, AUTH_SEED) === AUTH_HASH;
 
 /* ============================================================
    3) COMPONENTES VISUAIS REUTILIZÁVEIS
