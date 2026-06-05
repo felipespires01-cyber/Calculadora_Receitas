@@ -261,7 +261,7 @@ const cyrb53 = (str, seed = 0) => {
 const AUTH_KEY = "precificador_auth";
 const AUTH_USER = "isa";
 const AUTH_SEED = 7321;
-const AUTH_HASH = 8470134523032408; // hash de "isa123"
+const AUTH_HASH = 8470134523032408; // hash da senha (não guardamos a senha em texto)
 const conferirLogin = (usuario, senha) =>
   usuario.trim().toLowerCase() === AUTH_USER &&
   cyrb53("precificador|" + senha, AUTH_SEED) === AUTH_HASH;
