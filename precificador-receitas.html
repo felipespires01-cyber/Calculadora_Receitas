@@ -86,6 +86,10 @@
   .spin { animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   button, .card-anim { transition: box-shadow .18s ease, transform .12s ease, background .15s ease; }
+  @keyframes flashSucesso { 0% { box-shadow: 0 0 0 0 rgba(59,109,17,0.0); } 30% { box-shadow: 0 0 0 4px rgba(59,109,17,0.25); } 100% { box-shadow: 0 0 0 0 rgba(59,109,17,0.0); } }
+  .flash-ok { animation: flashSucesso .9s ease; }
+  .reveal { animation: revelar .22s ease; }
+  @keyframes revelar { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
@@ -592,7 +596,13 @@ function App() {
                   {calc.precos.map((p) => {
                     const sel = p.margem === st.margem;
                     return (
-                      <div key={p.margem} onClick={() => set({ margem: p.margem })} style={{ display: "grid", gridTemplateColumns: "68px 1fr 1fr 1fr", padding: "9px 14px", borderTop: "0.5px solid var(--color-border-tertiary)", background: sel ? C.coral50 : "transparent", alignItems: "center", cursor: "pointer" }}>
+                      <div key={p.margem} onClick={() => set({ margem: p.margem })} className="card-anim" style={{
+                        display: "grid", gridTemplateColumns: "68px 1fr 1fr 1fr", padding: "11px 14px",
+                        borderTop: "0.5px solid var(--color-border-tertiary)",
+                        background: sel ? C.coral50 : "transparent",
+                        boxShadow: sel ? "inset 3px 0 0 " + C.coral400 : "none",
+                        alignItems: "center", cursor: "pointer",
+                      }}>
                         <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 22, borderRadius: "var(--border-radius-md)", background: sel ? C.coral400 : "var(--color-background-secondary)", color: sel ? "#fff" : "var(--color-text-secondary)", fontSize: 12, fontWeight: 500 }}>{p.margem}%</span>
                         <span style={{ fontSize: 15, fontWeight: 500 }}>{fmt(p.preco)}</span>
                         <span style={{ fontSize: 14, color: "var(--color-text-success)" }}>+{fmt(p.lucroUn)}</span>
@@ -633,7 +643,7 @@ function App() {
 
                 {/* Salvar */}
                 <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                  <button onClick={salvar} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: "var(--border-radius-md)", border: "0.5px solid " + C.coral400, background: salvouFlash ? "var(--color-background-success)" : C.coral400, color: salvouFlash ? "var(--color-text-success)" : "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                  <button onClick={salvar} className={salvouFlash ? "flash-ok" : ""} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: "var(--border-radius-md)", border: "0.5px solid " + C.coral400, background: salvouFlash ? "var(--color-background-success)" : C.coral400, color: salvouFlash ? "var(--color-text-success)" : "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
                     {salvouFlash ? <Ic n="check" s={15} /> : <Ic n="save" s={15} />}
                     {salvouFlash ? "Salvo!" : editId ? "Atualizar produto" : "Salvar produto"}
                   </button>
@@ -724,7 +734,7 @@ function App() {
                   <span style={{ color: "var(--color-text-secondary)" }}>Lucro/un.: <span style={{ color: "var(--color-text-success)", fontWeight: 500 }}>+{fmt(p.precoVenda - p.custoPorUn)}</span></span>
                 </div>
                 {aberto && (
-                  <div style={{ marginTop: 12, background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px" }}>
+                  <div className="reveal" style={{ marginTop: 12, background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px" }}>
                     <p style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Ingredientes</p>
                     {p.ingredientes.filter((i) => i.nome || i.custo).map((i, idx) => (
                       <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "2px 0" }}>
