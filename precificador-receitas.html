@@ -488,7 +488,7 @@ function App() {
                     );
                   })}
                 </div>
-                <Inp type="number" value={st.rendimento} onChange={(e) => set({ rendimento: e.target.value })} placeholder={ehKg ? "Ex: 2,5" : "Ex: 30"} min={ehKg ? "0" : "1"} step={ehKg ? "0.001" : "1"} />
+                <Inp type={ehKg ? "text" : "number"} inputMode={ehKg ? "decimal" : undefined} value={st.rendimento} onChange={(e) => set({ rendimento: e.target.value })} placeholder={ehKg ? "Ex: 2,5" : "Ex: 30"} min={ehKg ? undefined : "1"} step={ehKg ? undefined : "1"} />
                 <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 4, marginBottom: 0 }}>{ehKg ? "Quanto a receita rende em kg?" : "Quantas peças a receita rende?"}</p>
               </div>
             </div>
