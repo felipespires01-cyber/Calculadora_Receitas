@@ -19,8 +19,11 @@ const Babel = require("@babel/standalone");
 const raiz = dirname(fileURLToPath(import.meta.url));
 const CAMINHO_FONTE = join(raiz, "src", "precificador-receitas.source.html");
 const CAMINHO_SAIDA = join(raiz, "precificador-receitas.html");
+const CAMINHO_INDEX = join(raiz, "index.html");
 const VENDOR_REACT = join(raiz, "vendor", "react.production.min.js");
 const VENDOR_REACT_DOM = join(raiz, "vendor", "react-dom.production.min.js");
+const SW_TEMPLATE = join(raiz, "src", "sw.template.js");
+const SW_SAIDA = join(raiz, "sw.js");
 
 // Tags de CDN exatas que serão substituídas
 const TAG_REACT = '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>';
@@ -78,7 +81,17 @@ if (html.includes('type="text/babel"')) falhar('Ainda há type="text/babel" no a
 // Sanidade: o código do app precisa estar presente
 if (!html.includes("ReactDOM.createRoot")) falhar("O código do app não foi encontrado no arquivo final.");
 
-// 5) Escrever o arquivo final
+// 5) Escrever os arquivos finais (app): index.html (Pages) e precificador-receitas.html (arquivo)
 writeFileSync(CAMINHO_SAIDA, html, "utf8");
+writeFileSync(CAMINHO_INDEX, html, "utf8");
 const kb = (Buffer.byteLength(html, "utf8") / 1024).toFixed(0);
-console.log("OK: precificador-receitas.html gerado (" + kb + " KB), autossuficiente.");
+
+// 6) Gerar o service worker versionado (carimbo de build para invalidar cache antigo)
+const versao = "v" + Date.now();
+let sw = readFileSync(SW_TEMPLATE, "utf8");
+if (!sw.includes("__CACHE_VERSION__")) falhar("Template do service worker sem __CACHE_VERSION__.");
+sw = sw.split("__CACHE_VERSION__").join(versao);
+writeFileSync(SW_SAIDA, sw, "utf8");
+
+console.log("OK: index.html + precificador-receitas.html gerados (" + kb + " KB), autossuficientes.");
+console.log("OK: sw.js gerado (cache " + versao + ").");
