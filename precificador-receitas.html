@@ -327,6 +327,52 @@ function TabBtn({ active, onClick, icon, children, badge }) {
     </button>
   );
 }
+function TelaLogin({ aoEntrar }) {
+  const [usuario, setUsuario] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState(false);
+  const submeter = (e) => {
+    e.preventDefault();
+    if (conferirLogin(usuario, senha)) aoEntrar();
+    else setErro(true);
+  };
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0" }}>
+      <div style={{ width: "100%", maxWidth: 340 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 18 }}>
+          <div style={{
+            width: 54, height: 54, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+            background: "linear-gradient(135deg, " + C.coral400 + ", " + C.coral600 + ")",
+            boxShadow: "0 4px 12px rgba(216,90,48,0.35)",
+          }}>
+            <Ic n="chef" s={28} c="#fff" />
+          </div>
+          <h1 style={{ fontSize: 19, fontWeight: 600, margin: 0 }}>Precificador de receitas</h1>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "2px 0 0" }}>Entre para continuar</p>
+        </div>
+        <Card>
+          <form onSubmit={submeter}>
+            <Field label="Usuário">
+              <Inp value={usuario} onChange={(e) => { setUsuario(e.target.value); setErro(false); }} placeholder="Seu usuário" autoFocus />
+            </Field>
+            <div style={{ height: 12 }} />
+            <Field label="Senha">
+              <Inp type="password" value={senha} onChange={(e) => { setSenha(e.target.value); setErro(false); }} placeholder="Sua senha" />
+            </Field>
+            {erro && (
+              <div style={{ marginTop: 10, display: "flex", gap: 7, alignItems: "center", fontSize: 13, color: "var(--color-text-danger)" }}>
+                <Ic n="alert" s={15} style={{ flexShrink: 0 }} /> Usuário ou senha incorretos.
+              </div>
+            )}
+            <button type="submit" style={{ width: "100%", marginTop: 16, padding: "10px 0", borderRadius: "var(--border-radius-md)", border: "none", background: C.coral400, color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+              Entrar
+            </button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 /* ============================================================
    4) ESTADO INICIAL DE UMA RECEITA EM BRANCO
