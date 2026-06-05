@@ -6,6 +6,7 @@ const CACHE = "precificador-__CACHE_VERSION__";
 const ATIVOS = [
   "./",
   "./index.html",
+  "./como-calcula.html",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
