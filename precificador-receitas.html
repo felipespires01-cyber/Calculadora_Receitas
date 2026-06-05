@@ -396,6 +396,11 @@ function App() {
   const [expandido, setExpandido] = useState(null);   // produto aberto na lista
   const [msg, setMsg] = useState(null); // { tipo: "erro"|"sucesso", texto }
   const [importPreview, setImportPreview] = useState(null); // { produtos, novas, atualizadas }
+  const [autenticado, setAutenticado] = useState(() => {
+    try { return localStorage.getItem(AUTH_KEY) === "1"; } catch { return false; }
+  });
+  const entrar = () => { try { localStorage.setItem(AUTH_KEY, "1"); } catch {} setAutenticado(true); };
+  const sair = () => { try { localStorage.removeItem(AUTH_KEY); } catch {} setAutenticado(false); };
 
   const set = (patch) => setSt((p) => ({ ...p, ...patch }));
 
@@ -510,6 +515,7 @@ function App() {
 
   const cancelarImportacao = () => setImportPreview(null);
 
+  if (!autenticado) return <TelaLogin aoEntrar={entrar} />;
   return (
     <div style={{ padding: "16px 0 40px" }}>
       {/* Cabeçalho */}
@@ -525,6 +531,9 @@ function App() {
           <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0, letterSpacing: "-0.01em" }}>Precificador de receitas</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "2px 0 0" }}>Custo, margem e preço num só lugar</p>
         </div>
+        <button onClick={sair} title="Sair" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: "var(--border-radius-md)", border: "0.5px solid var(--color-border-tertiary)", background: "none", color: "var(--color-text-secondary)", fontSize: 13, cursor: "pointer" }}>
+          <Ic n="logout" s={14} /> Sair
+        </button>
       </div>
 
       {/* Abas */}
