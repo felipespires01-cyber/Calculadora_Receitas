@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Como o Precificador calcula os preços</title>
+<style>
+  :root {
+    --bg: #f3ede3;
+    --card: #ffffff;
+    --soft: #f6f3ee;
+    --text: #2b2722;
+    --muted: #837c70;
+    --coral: #D85A30;
+    --coral-dark: #993C1D;
+    --coral-soft: #FAECE7;
+    --green: #3B6D11;
+    --border: rgba(0,0,0,0.10);
+    --radius: 14px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1816;
+      --card: #211f1c;
+      --soft: #2a2724;
+      --text: #ece8e1;
+      --muted: #a39c8f;
+      --coral: #ec7a52;
+      --coral-dark: #f0997b;
+      --coral-soft: rgba(216,90,48,0.16);
+      --green: #97C459;
+      --border: rgba(255,255,255,0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 max(16px, env(safe-area-inset-left)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right));
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding-top: max(20px, env(safe-area-inset-top)); }
+
+  header.hero {
+    display: flex; align-items: center; gap: 14px;
+    padding: 6px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 22px;
+  }
+  .selo {
+    width: 50px; height: 50px; border-radius: 15px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+    box-shadow: 0 4px 12px rgba(216,90,48,0.35);
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 14px; margin: 3px 0 0; }
+
+  h2 {
+    font-size: 18px; font-weight: 600; margin: 30px 0 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    background: var(--coral-soft); color: var(--coral-dark);
+    font-size: 14px; font-weight: 700;
+  }
+  p { margin: 10px 0; }
+  .muted { color: var(--muted); }
+  strong { font-weight: 600; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px; margin: 14px 0;
+    box-shadow: 0 1px 2px rgba(80,50,30,0.04), 0 6px 16px rgba(80,50,30,0.05);
+  }
+  ul { margin: 8px 0; padding-left: 20px; }
+  li { margin: 5px 0; }
+
+  .formula {
+    background: var(--soft); border-left: 4px solid var(--coral);
+    border-radius: 10px; padding: 12px 14px; margin: 14px 0;
+    font-size: 15px;
+  }
+  .formula .eq { font-weight: 600; color: var(--coral-dark); }
+
+  .callout {
+    background: var(--coral-soft); border-radius: 12px; padding: 14px 16px; margin: 16px 0;
+    font-size: 14.5px;
+  }
+  .callout strong { color: var(--coral-dark); }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+  td.r, th.r { text-align: right; }
+  .total td { border-top: 2px solid var(--border); border-bottom: none; font-weight: 700; }
+  .lucro { color: var(--green); font-weight: 600; }
+  tr.destaque td { background: var(--coral-soft); }
+  .badge {
+    display: inline-block; min-width: 40px; text-align: center;
+    background: var(--soft); border-radius: 7px; padding: 2px 8px; font-weight: 600; font-size: 12.5px;
+  }
+  tr.destaque .badge { background: var(--coral); color: #fff; }
+
+  footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    .card, .callout, .formula { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="selo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/>
+        <line x1="6" y1="17" x2="18" y2="17"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Como os preços são calculados</h1>
+      <p class="sub">Precificador de Receitas — explicação simples, com exemplo</p>
+    </div>
+  </header>
+
+  <p>Este documento mostra, em linguagem simples, <strong>de onde vem o preço</strong> que o app sugere.
+  A ideia é juntar <strong>todos os custos</strong> de uma receita, dividir pelo que ela rende, e somar a sua
+  <strong>margem de lucro</strong>. Vamos por partes.</p>
+
+  <!-- 1 -->
+  <h2><span class="num">1</span> Custo dos ingredientes</h2>
+  <p>É quanto você gasta de ingrediente <strong>na quantidade usada na receita</strong> — não o pacote inteiro.
+  Por exemplo: se o pacote de leite condensado custa R$ 8,00 e você usou um pacote, o custo é R$ 8,00; se usou
+  metade, é R$ 4,00.</p>
+  <div class="formula"><span class="eq">Custo dos ingredientes</span> = soma do custo de cada ingrediente usado.</div>
+
+  <!-- 2 -->
+  <h2><span class="num">2</span> Custos adicionais</h2>
+  <p>São os gastos do lote que não são ingrediente. O app separa em três, e você preenche só os que se aplicam:</p>
+  <ul>
+    <li><strong>Embalagem</strong> — pote, saco, caixinha, forminha.</li>
+    <li><strong>Gás / Energia</strong> — uma estimativa do que gastou de forno/fogão na receita.</li>
+    <li><strong>Outros</strong> — etiqueta, fita, e outros extras.</li>
+  </ul>
+  <div class="formula"><span class="eq">Custos adicionais</span> = Embalagem + Gás/Energia + Outros.</div>
+
+  <!-- 3 -->
+  <h2><span class="num">3</span> Mão de obra (o seu tempo)</h2>
+  <p>O seu trabalho tem valor — não dá pra trabalhar de graça. Você informa <strong>quanto tempo levou</strong>
+  (horas e minutos) e <strong>quanto vale a sua hora</strong>. O app transforma os minutos em fração de hora
+  (30 minutos = 0,5 hora) e multiplica pelo valor da hora.</p>
+  <div class="formula"><span class="eq">Mão de obra</span> = (horas + minutos ÷ 60) × valor da hora.</div>
+
+  <!-- 4 -->
+  <h2><span class="num">4</span> Custo total do lote</h2>
+  <p>É tudo somado: o que a receita inteira custou para você produzir.</p>
+  <div class="formula"><span class="eq">Custo total</span> = Ingredientes + Custos adicionais + Mão de obra.</div>
+
+  <!-- 5 -->
+  <h2><span class="num">5</span> Quanto rende (por unidade ou por quilo)</h2>
+  <p>Para saber o custo de <strong>uma parte</strong>, o app divide o custo total pelo que a receita rende:</p>
+  <ul>
+    <li><strong>Por unidade:</strong> você diz quantas peças saem (ex.: 30 brigadeiros) → o app calcula o
+      <strong>custo por unidade</strong>.</li>
+    <li><strong>Por quilo:</strong> você diz o peso total que a fornada rendeu (ex.: 2 kg) → o app calcula o
+      <strong>custo por quilo</strong>.</li>
+  </ul>
+  <div class="formula"><span class="eq">Custo por unidade (ou por quilo)</span> = Custo total ÷ quanto rende.</div>
+
+  <!-- 6 -->
+  <h2><span class="num">6</span> Margem e preço de venda</h2>
+  <p>A <strong>margem</strong> é o quanto você quer ganhar em cima do custo, em porcentagem. Uma margem de
+  <strong>50%</strong> quer dizer: o preço é o custo <strong>mais metade dele</strong>. O app já mostra várias
+  margens prontas (20%, 30%, 50%, 70%, 100% e 150%) para você escolher a que achar melhor.</p>
+  <div class="formula">
+    <span class="eq">Preço de venda</span> = custo por unidade × (1 + margem).<br>
+    <span class="eq">Lucro</span> = preço de venda − custo. <span class="muted">(o que sobra para você)</span>
+  </div>
+  <p class="muted">Exemplo da conta: com margem de 50%, multiplica-se o custo por 1,5 (que é 1 + 0,50).</p>
+
+  <!-- Exemplo -->
+  <h2><span class="num">★</span> Exemplo passo a passo</h2>
+  <p>Vamos precificar uma fornada de <strong>brigadeiros</strong> que rende <strong>30 unidades</strong>.</p>
+
+  <div class="card">
+    <table>
+      <tr><th colspan="2">Ingredientes (na quantidade usada)</th></tr>
+      <tr><td>Leite condensado</td><td class="r">R$ 8,00</td></tr>
+      <tr><td>Chocolate em pó</td><td class="r">R$ 4,00</td></tr>
+      <tr><td>Manteiga</td><td class="r">R$ 1,00</td></tr>
+      <tr><td>Granulado</td><td class="r">R$ 3,00</td></tr>
+      <tr class="total"><td>Soma dos ingredientes</td><td class="r">R$ 16,00</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <table>
+      <tr><th colspan="2">Custos adicionais</th></tr>
+      <tr><td>Embalagem (forminhas)</td><td class="r">R$ 3,00</td></tr>
+      <tr><td>Gás / Energia</td><td class="r">R$ 1,00</td></tr>
+      <tr class="total"><td>Soma dos adicionais</td><td class="r">R$ 4,00</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <table>
+      <tr><th colspan="2">Mão de obra</th></tr>
+      <tr><td>Tempo gasto</td><td class="r">1h30 (= 1,5 hora)</td></tr>
+      <tr><td>Valor da sua hora</td><td class="r">R$ 20,00</td></tr>
+      <tr class="total"><td>Mão de obra (1,5 × 20)</td><td class="r">R$ 30,00</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <table>
+      <tr class="total" style="border-top:none"><td>Custo total do lote (16 + 4 + 30)</td><td class="r">R$ 50,00</td></tr>
+      <tr><td>Rendimento</td><td class="r">30 unidades</td></tr>
+      <tr class="total"><td>Custo por unidade (50 ÷ 30)</td><td class="r">≈ R$ 1,67</td></tr>
+    </table>
+  </div>
+
+  <p>Agora é só escolher a margem. O app monta esta tabela (a linha em destaque é a margem de 50%):</p>
+
+  <div class="card">
+    <table>
+      <tr>
+        <th>Margem</th><th class="r">Preço/un.</th><th class="r">Lucro/un.</th><th class="r">Lucro total (30 un.)</th>
+      </tr>
+      <tr><td><span class="badge">20%</span></td><td class="r">R$ 2,00</td><td class="r lucro">+R$ 0,33</td><td class="r lucro">+R$ 10,00</td></tr>
+      <tr><td><span class="badge">30%</span></td><td class="r">R$ 2,17</td><td class="r lucro">+R$ 0,50</td><td class="r lucro">+R$ 15,00</td></tr>
+      <tr class="destaque"><td><span class="badge">50%</span></td><td class="r">R$ 2,50</td><td class="r lucro">+R$ 0,83</td><td class="r lucro">+R$ 25,00</td></tr>
+      <tr><td><span class="badge">70%</span></td><td class="r">R$ 2,83</td><td class="r lucro">+R$ 1,17</td><td class="r lucro">+R$ 35,00</td></tr>
+      <tr><td><span class="badge">100%</span></td><td class="r">R$ 3,33</td><td class="r lucro">+R$ 1,67</td><td class="r lucro">+R$ 50,00</td></tr>
+      <tr><td><span class="badge">150%</span></td><td class="r">R$ 4,17</td><td class="r lucro">+R$ 2,50</td><td class="r lucro">+R$ 75,00</td></tr>
+    </table>
+  </div>
+
+  <div class="callout">
+    <strong>Lendo a linha de 50%:</strong> cada brigadeiro sai por <strong>R$ 2,50</strong>. Desse valor,
+    <strong>R$ 1,67</strong> é custo e <strong>R$ 0,83</strong> é o seu lucro. Vendendo as 30 unidades, sobram
+    <strong>R$ 25,00</strong> de lucro no lote.
+  </div>
+
+  <div class="callout">
+    <strong>E se fosse "por quilo"?</strong> Muda só o passo 5: em vez de dividir por 30 unidades, divide-se pelo
+    peso total. Se essa mesma receita rendesse <strong>2 kg</strong>, o custo seria R$ 50 ÷ 2 = <strong>R$ 25,00 por
+    quilo</strong>, e com 50% de margem o preço sairia <strong>R$ 37,50 por quilo</strong>. Todo o resto da conta é igual.
+  </div>
+
+  <div class="callout muted" style="background:var(--soft)">
+    <strong>Detalhe sobre os centavos:</strong> o app usa o valor exato nas contas (por isso mostra "≈ R$ 1,67"
+    mas calcula com R$ 1,6666…). Por isso, às vezes "1,67 × 1,5" na mão dá uma diferencinha de centavo do que
+    aparece na tela — é só arredondamento, está tudo certo.
+  </div>
+
+  <footer>
+    Precificador de Receitas · Documento de apoio · Junho de 2026<br>
+    As fórmulas acima são exatamente as usadas pelo aplicativo.
+  </footer>
+
+</div>
+</body>
+</html>
