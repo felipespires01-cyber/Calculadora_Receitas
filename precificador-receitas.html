@@ -27,11 +27,6 @@
     - Todo o código React está mais abaixo, dentro de <script type="text/babel">.
     - O código está organizado em blocos comentados para facilitar.
 
-  OBSERVAÇÃO sobre a "Pesquisa de preço de mercado":
-    - Esse recurso usa a inteligência artificial do Claude e SÓ funciona
-      dentro do app/site do Claude. Aqui no arquivo solto ele exibe um aviso.
-    - Para fazer funcionar fora do Claude seria preciso um pequeno servidor
-      (backend) com uma chave de API — fora do escopo deste arquivo simples.
   ============================================================
 -->
 
@@ -330,9 +325,6 @@ function App() {
   const [editId, setEditId] = useState(null);         // id em edição
   const [salvouFlash, setSalvouFlash] = useState(false);
   const [expandido, setExpandido] = useState(null);   // produto aberto na lista
-  const [pesqLoading, setPesqLoading] = useState(false);
-  const [pesqResult, setPesqResult] = useState(null);
-  const [pesqErro, setPesqErro] = useState(null);
   const [msg, setMsg] = useState(null); // { tipo: "erro"|"sucesso", texto }
   const [importPreview, setImportPreview] = useState(null); // { produtos, novas, atualizadas }
 
@@ -352,7 +344,7 @@ function App() {
   const addIngr = () => set({ ingredientes: [...st.ingredientes, { id: Date.now(), nome: "", custo: "" }] });
   const removeIngr = (id) => set({ ingredientes: st.ingredientes.length > 1 ? st.ingredientes.filter((i) => i.id !== id) : st.ingredientes });
   const updateIngr = (id, f, v) => set({ ingredientes: st.ingredientes.map((i) => (i.id === id ? { ...i, [f]: v } : i)) });
-  const reset = () => { setSt(receitaVazia); setEditId(null); setPesqResult(null); setPesqErro(null); };
+  const reset = () => { setSt(receitaVazia); setEditId(null); };
 
   // --- Cálculos (recalcula sozinho a cada digitação) ---
   const calc = useMemo(() => {
@@ -399,7 +391,7 @@ function App() {
       embalagem: p.embalagem, gasEnergia: p.gasEnergia, outros: p.outros,
       horas: p.horas, minutos: p.minutos, valorHora: p.valorHora, margem: p.margem || 50,
     });
-    setEditId(p.id); setPesqResult(null); setPesqErro(null); setView("calc");
+    setEditId(p.id); setView("calc");
   };
   const excluir = (id) => { persistir(produtos.filter((p) => p.id !== id)); if (editId === id) setEditId(null); };
 
@@ -444,33 +436,6 @@ function App() {
   };
 
   const cancelarImportacao = () => setImportPreview(null);
-
-  // --- Pesquisa de preço de mercado (só funciona dentro do Claude) ---
-  const pesquisarMercado = async () => {
-    if (!st.produto.trim()) return;
-    setPesqLoading(true); setPesqErro(null); setPesqResult(null);
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: 'Pesquise na web o preço de venda de "' + st.produto + '" feito de forma caseira ou artesanal, no Brasil, em reais (BRL), praticado por pequenos produtores. Responda APENAS com um objeto JSON puro, sem markdown, neste formato: {"precoMin": numero, "precoMax": numero, "precoMedio": numero, "unidade": "texto curto", "observacao": "frase curta"}. Use ponto como separador decimal.',
-          }],
-          tools: [{ type: "web_search_20250305", name: "web_search" }],
-        }),
-      });
-      const data = await response.json();
-      const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
-      const match = text.replace(/```json|```/g, "").match(/\{[\s\S]*\}/);
-      setPesqResult(JSON.parse(match ? match[0] : text));
-    } catch (e) {
-      setPesqErro("A pesquisa de preço de mercado só funciona dentro do app do Claude. Aqui no arquivo solto, pesquise manualmente o preço na sua região.");
-    } finally { setPesqLoading(false); }
-  };
 
   return (
     <div style={{ padding: "16px 0 40px" }}>
@@ -619,35 +584,6 @@ function App() {
                       </div>
                     );
                   })}
-                </div>
-
-                {/* Pesquisa de mercado */}
-                <div style={{ marginTop: 18, padding: 14, border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-md)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
-                    <Ic n="cart" s={15} c={C.coral600} />
-                    <span style={{ fontSize: 14, fontWeight: 500 }}>Preço de mercado</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 10px" }}>Veja por quanto esse produto costuma ser vendido, pra comparar com o seu preço.</p>
-                  <button onClick={pesquisarMercado} disabled={!st.produto.trim() || pesqLoading} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: "var(--border-radius-md)", border: "none", background: st.produto.trim() && !pesqLoading ? C.coral400 : "var(--color-background-secondary)", color: st.produto.trim() && !pesqLoading ? "#fff" : "var(--color-text-secondary)", fontSize: 13, fontWeight: 500, cursor: st.produto.trim() && !pesqLoading ? "pointer" : "default" }}>
-                    {pesqLoading ? <Ic n="loader" s={14} cls="spin" /> : <Ic n="search" s={14} />}
-                    {pesqLoading ? "Pesquisando..." : "Pesquisar preço de \"" + (st.produto || "...") + "\""}
-                  </button>
-                  {pesqErro && (
-                    <div style={{ marginTop: 10, display: "flex", gap: 7, alignItems: "flex-start", fontSize: 13, color: "var(--color-text-danger)" }}>
-                      <Ic n="alert" s={15} style={{ marginTop: 1, flexShrink: 0 }} />{pesqErro}
-                    </div>
-                  )}
-                  {pesqResult && (
-                    <div style={{ marginTop: 12, background: C.coral50, borderRadius: "var(--border-radius-md)", padding: "12px 14px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-                        <div><div style={{ fontSize: 11, color: C.coral600 }}>Mínimo</div><div style={{ fontSize: 15, fontWeight: 500, color: C.coral800 }}>{fmt(pesqResult.precoMin)}</div></div>
-                        <div><div style={{ fontSize: 11, color: C.coral600 }}>Médio</div><div style={{ fontSize: 18, fontWeight: 500, color: C.coral800 }}>{fmt(pesqResult.precoMedio)}</div></div>
-                        <div><div style={{ fontSize: 11, color: C.coral600 }}>Máximo</div><div style={{ fontSize: 15, fontWeight: 500, color: C.coral800 }}>{fmt(pesqResult.precoMax)}</div></div>
-                      </div>
-                      {pesqResult.unidade && <div style={{ fontSize: 12, color: C.coral600, marginTop: 8 }}>Referência: {pesqResult.unidade}</div>}
-                      {pesqResult.observacao && <div style={{ fontSize: 12, color: C.coral600, marginTop: 4, fontStyle: "italic" }}>{pesqResult.observacao}</div>}
-                    </div>
-                  )}
                 </div>
 
                 {/* Salvar */}
