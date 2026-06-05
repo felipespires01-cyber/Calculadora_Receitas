@@ -688,16 +688,16 @@ function App() {
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15, fontWeight: 500 }}>{p.produto || "Sem nome"}</div>
-                    <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginTop: 2 }}>Salvo em {fmtData(p.savedAt)} · {Math.max(parseInt(p.rendimento) || 1, 1)} unidades</div>
+                    <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginTop: 2 }}>Salvo em {fmtData(p.savedAt)} · {p.tipoRend === "kg" ? String(p.rendimento).replace(".", ",") + " kg" : Math.max(parseInt(p.rendimento) || 1, 1) + " unidades"}</div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Preço de venda ({p.margem || 50}%)</div>
+                    <div style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Preço de venda ({p.margem || 50}%){p.tipoRend === "kg" ? " — por kg" : ""}</div>
                     <div style={{ fontSize: 18, fontWeight: 500, color: C.coral600 }}>{fmt(p.precoVenda)}</div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 14, marginTop: 10, paddingTop: 10, borderTop: "0.5px solid var(--color-border-tertiary)", fontSize: 13 }}>
-                  <span style={{ color: "var(--color-text-secondary)" }}>Custo/un.: <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{fmt(p.custoPorUn)}</span></span>
-                  <span style={{ color: "var(--color-text-secondary)" }}>Lucro/un.: <span style={{ color: "var(--color-text-success)", fontWeight: 500 }}>+{fmt(p.precoVenda - p.custoPorUn)}</span></span>
+                  <span style={{ color: "var(--color-text-secondary)" }}>{p.tipoRend === "kg" ? "Custo/kg" : "Custo/un."}: <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{fmt(p.custoPorUn)}</span></span>
+                  <span style={{ color: "var(--color-text-secondary)" }}>{p.tipoRend === "kg" ? "Lucro/kg" : "Lucro/un."}: <span style={{ color: "var(--color-text-success)", fontWeight: 500 }}>+{fmt(p.precoVenda - p.custoPorUn)}</span></span>
                 </div>
                 {aberto && (
                   <div className="reveal" style={{ marginTop: 12, background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: "12px 14px" }}>
