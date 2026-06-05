@@ -575,8 +575,8 @@ function App() {
                       <span style={{ fontSize: 20, fontWeight: 500, color: C.coral600 }}>{fmt(calc.custoTotal)}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Custo por unidade ({calc.unids} un.)</span>
-                      <span style={{ fontSize: 15, fontWeight: 500, color: C.coral800 }}>{fmt(calc.custoPorUn)}</span>
+                      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{ehKg ? "Custo por quilo" : "Custo por unidade"} ({ehKg ? String(calc.quantidade).replace(".", ",") : calc.quantidade} {ehKg ? "kg" : "un."})</span>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: C.coral800 }}>{fmt(calc.custoPorMedida)}</span>
                     </div>
                   </div>
                 </div>
@@ -584,7 +584,7 @@ function App() {
                 <p style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Escolha a margem (clique numa linha)</p>
                 <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-md)", overflow: "hidden" }}>
                   <div style={{ display: "grid", gridTemplateColumns: "68px 1fr 1fr 1fr", background: "var(--color-background-secondary)", padding: "7px 14px", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 500 }}>
-                    <span>Margem</span><span>Preço/un.</span><span>Lucro/un.</span><span>Lucro total</span>
+                    <span>Margem</span><span>{ehKg ? "Preço/kg" : "Preço/un."}</span><span>{ehKg ? "Lucro/kg" : "Lucro/un."}</span><span>Lucro total</span>
                   </div>
                   {calc.precos.map((p) => {
                     const sel = p.margem === st.margem;
